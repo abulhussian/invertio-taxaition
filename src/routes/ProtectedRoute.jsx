@@ -1,27 +1,27 @@
-"use client"
+// components/ProtectedRoute.jsx
+"use client";
 
-import { useAuth } from "../contexts/AuthContext"
-import { navigate } from "../utils/navigation"
-import { useEffect } from "react"
+import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth()
+export default function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !currentUser) {
-      navigate("/login")
+    if (!loading && !user) {
+      router.push('/Auth/Login');
     }
-  }, [currentUser, loading])
+  }, [user, loading, router]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
-  return currentUser ? children : null
+  return user ? children : null;
 }
-
-export default ProtectedRoute

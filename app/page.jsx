@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { motion } from "framer-motion"
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext"
 import ErrorBoundary from "../src/components/ErrorBoundary"
-import { useLocation, navigate } from "../src/utils/navigation"
+import { useRouter } from "next/navigation"
 
 // Import all page components
 import Login from "../src/pages/Auth/Login"
@@ -17,22 +17,24 @@ import Payments from "../src/pages/Payments"
 import Settings from "../src/pages/Settings"
 
 const SimpleRouter = () => {
-  const { pathname } = useLocation()
-  const { currentUser, loading } = useAuth()
+  const router = useRouter()
+  const { user, loading } = useAuth()
 
   useEffect(() => {
     if (loading) return
 
+    const pathname = window.location.pathname
     const isAuthPage = pathname === "/login" || pathname === "/register"
-    if (!currentUser && !isAuthPage) {
-      navigate("/login")
+    
+    if (!user && !isAuthPage) {
+      router.push("/login")
       return
     }
-    if (currentUser && (pathname === "/" || isAuthPage)) {
-      navigate("/dashboard")
+    if (user && (pathname === "/" || isAuthPage)) {
+      router.push("/dashboard")
       return
     }
-  }, [pathname, currentUser, loading])
+  }, [user, loading, router])
 
   if (loading) {
     return (
@@ -43,30 +45,32 @@ const SimpleRouter = () => {
   }
 
   const renderPage = () => {
+    const pathname = window.location.pathname
+    
     switch (pathname) {
       case "/login":
         return <Login />
       case "/register":
         return <Register />
       case "/dashboard":
-        return currentUser ? <Dashboard /> : <Login />
+        return user ? <Dashboard /> : <Login />
       case "/dashboard/returns":
-        return currentUser ? <Returns /> : <Login />
+        return user ? <Returns /> : <Login />
       case "/dashboard/documents":
-        return currentUser ? <Documents /> : <Login />
+        return user ? <Documents /> : <Login />
       case "/dashboard/activity-logs":
-        return currentUser ? <ActivityLogs /> : <Login />
+        return user ? <ActivityLogs /> : <Login />
       case "/dashboard/payments":
-        return currentUser ? <Payments /> : <Login />
+        return user ? <Payments /> : <Login />
       case "/dashboard/settings":
-        return currentUser ? <Settings /> : <Login />
+        return user ? <Settings /> : <Login />
       default:
-        return currentUser ? <Dashboard /> : <Login />
+        return user ? <Dashboard /> : <Login />
     }
   }
 
   return (
-    <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       {renderPage()}
     </motion.div>
   )

@@ -1,11 +1,13 @@
 "use client"
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import ProtectedRoute from "../routes/ProtectedRoute"
 import { useAuth } from "../contexts/AuthContext"
 
 const ActivityLogs = () => {
-  const { currentUser } = useAuth()
+  const { user } = useAuth()
   const [activities, setActivities] = useState([])
   const [filteredActivities, setFilteredActivities] = useState([])
   const [filterType, setFilterType] = useState("all")
@@ -14,10 +16,10 @@ const ActivityLogs = () => {
   useEffect(() => {
     // Load activities from localStorage
     const storedActivities = JSON.parse(localStorage.getItem("activities") || "[]")
-    const userActivities = storedActivities.filter((activity) => activity.userId === currentUser?.uid)
+    const userActivities = storedActivities.filter((activity) => activity.userId === user?.uid)
     setActivities(userActivities)
     setFilteredActivities(userActivities)
-  }, [currentUser])
+  }, [user])
 
   useEffect(() => {
     let filtered = activities
@@ -101,126 +103,128 @@ const ActivityLogs = () => {
   ]
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Activity Logs</h1>
-        <p className="text-gray-600">Track all activities and changes in your account</p>
-      </motion.div>
+    <ProtectedRoute>
+      <div className="p-6 max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Activity Logs</h1>
+          <p className="text-gray-600">Track all activities and changes in your account</p>
+        </motion.div>
 
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-lg shadow-sm border p-6 mb-6"
-      >
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by description or details..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="md:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {activityTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Activity Timeline */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-lg shadow-sm border"
-      >
-        {filteredActivities.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Activities Found</h3>
-            <p className="text-gray-600">
-              {searchTerm || filterType !== "all"
-                ? "Try adjusting your search or filter criteria."
-                : "Start using the system to see your activity history here."}
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {filteredActivities.map((activity, index) => (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="p-6 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getActivityColor(activity.type)}`}
-                    >
-                      {getActivityIcon(activity.type)}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-900">{activity.description}</h3>
-                      <span className="text-xs text-gray-500">{formatTimestamp(activity.timestamp)}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{activity.details}</p>
-                    {activity.metadata && (
-                      <div className="mt-2 text-xs text-gray-500">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100">
-                          IP: {activity.metadata.ip || "Unknown"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
-      {/* Statistics */}
-      {filteredActivities.length > 0 && (
+        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6 bg-white rounded-lg shadow-sm border p-6"
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-lg shadow-sm border p-6 mb-6"
         >
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Activity Summary</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {activityTypes.slice(1).map((type) => {
-              const count = activities.filter((a) => a.type === type.value).length
-              return (
-                <div key={type.value} className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{count}</div>
-                  <div className="text-sm text-gray-600">{type.label}</div>
-                </div>
-              )
-            })}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by description or details..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="md:w-48">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {activityTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </motion.div>
-      )}
-    </div>
+
+        {/* Activity Timeline */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-lg shadow-sm border"
+        >
+          {filteredActivities.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="text-6xl mb-4">📝</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Activities Found</h3>
+              <p className="text-gray-600">
+                {searchTerm || filterType !== "all"
+                  ? "Try adjusting your search or filter criteria."
+                  : "Start using the system to see your activity history here."}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {filteredActivities.map((activity, index) => (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="p-6 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getActivityColor(activity.type)}`}
+                      >
+                        {getActivityIcon(activity.type)}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-gray-900">{activity.description}</h3>
+                        <span className="text-xs text-gray-500">{formatTimestamp(activity.timestamp)}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{activity.details}</p>
+                      {activity.metadata && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100">
+                            IP: {activity.metadata.ip || "Unknown"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Statistics */}
+        {filteredActivities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 bg-white rounded-lg shadow-sm border p-6"
+          >
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Activity Summary</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {activityTypes.slice(1).map((type) => {
+                const count = activities.filter((a) => a.type === type.value).length
+                return (
+                  <div key={type.value} className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">{count}</div>
+                    <div className="text-sm text-gray-600">{type.label}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </ProtectedRoute>
   )
 }
 

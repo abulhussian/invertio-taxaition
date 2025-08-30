@@ -1,7 +1,8 @@
 "use client"
+export const dynamic = "force-dynamic"
 
-import { useState } from "react"
-import { Link, useNavigate } from "../../utils/navigation"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { useAuth } from "../../contexts/AuthContext"
 import { Button } from "../../../components/ui/button"
@@ -24,14 +25,21 @@ const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [otp, setOtp] = useState("")
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [step, setStep] = useState("input") // 'input' or 'verify'
+   const { user, loading, login } = useAuth()
+  const router = useRouter()
 
-  const { login } = useAuth()
+  // const { login } = useAuth()
   const navigate = useNavigate()
 
+useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
   const handlePhoneLogin = async (e) => {
     e.preventDefault()
 
@@ -95,6 +103,18 @@ const Login = () => {
 
     setLoading(true)
     setError("")
+
+     if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (user) {
+    return null // or redirecting message
+  }
 
     // Simulate successful login
     setTimeout(() => {

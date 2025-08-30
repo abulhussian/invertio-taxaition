@@ -1,4 +1,5 @@
 "use client"
+export const dynamic = "force-dynamic"
 
 import { useState } from "react"
 import { Link, useNavigate } from "../../utils/navigation"
@@ -30,13 +31,33 @@ const Register = () => {
     confirmPassword: "",
   })
   const [otp, setOtp] = useState("")
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [step, setStep] = useState("input") // 'input' or 'verify'
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const { user, loading, login } = useAuth()
+  const router = useRouter()
 
-  const { login } = useAuth()
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (user) {
+    return null // or redirecting message
+  }
+
+  // const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleInputChange = (e) => {

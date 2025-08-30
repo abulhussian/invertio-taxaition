@@ -1,85 +1,96 @@
-"use client"
+// components/Sidebar.jsx (fixed version)
+"use client";
 
-import { useState } from "react"
-import { Link, useLocation } from "../utils/navigation"
-import { motion } from "framer-motion"
-import { Button } from "../../components/ui/button"
-import { Avatar, AvatarFallback } from "../../components/ui/avatar"
-import {
-  FileText,
-  FolderOpen,
-  Activity,
-  CreditCard,
-  Settings,
-  X,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { 
+  FileText, 
+  FolderOpen, 
+  Activity, 
+  CreditCard, 
+  Settings, 
+  X, 
+  LogOut, 
+  ChevronLeft, 
+  ChevronRight, 
   Building2,
-} from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
+  Home
+} from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const location = useLocation()
-  const { currentUser, logout } = useAuth()
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const navigationItems = [
     {
+      name: "Dashboard",
+      href: "/Dashboard",
+      icon: Home,
+      description: "Overview",
+    },
+    {
       name: "Returns",
-      href: "dashboard/returns",
+      href: "/Returns",
       icon: FileText,
       description: "Manage tax returns",
     },
     {
       name: "Documents",
-      href: "dashboard/documents",
+      href: "/Documents",
       icon: FolderOpen,
       description: "Document library",
     },
     {
       name: "Activity Logs",
-      href: "dashboard/activity-logs",
+      href: "/ActivityLogs",
       icon: Activity,
       description: "View activity history",
     },
     {
       name: "Payments",
-      href: "dashboard/payments",
+      href: "/Payments",
       icon: CreditCard,
       description: "Invoices & payments",
     },
     {
       name: "Settings",
-      href: "dashboard/settings",
+      href: "/Settings",
       icon: Settings,
       description: "Account settings",
     },
-  ]
+  ];
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await logout();
     } catch (error) {
-      console.error("Logout error:", error)
+      console.error("Logout error:", error);
     }
-  }
+  };
 
   const getUserInitials = () => {
-    const profile = JSON.parse(localStorage.getItem("userProfile") || "{}")
-    if (profile.firstName && profile.lastName) {
-      return `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
+    if (typeof window !== 'undefined') {
+      const profile = JSON.parse(localStorage.getItem("userProfile") || "{}");
+      if (profile.firstName && profile.lastName) {
+        return `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase();
+      }
     }
-    return currentUser?.email?.[0]?.toUpperCase() || "U"
-  }
+    return user?.email?.[0]?.toUpperCase() || "U";
+  };
 
   const getUserName = () => {
-    const profile = JSON.parse(localStorage.getItem("userProfile") || "{}")
-    if (profile.firstName && profile.lastName) {
-      return `${profile.firstName} ${profile.lastName}`
+    if (typeof window !== 'undefined') {
+      const profile = JSON.parse(localStorage.getItem("userProfile") || "{}");
+      if (profile.firstName && profile.lastName) {
+        return `${profile.firstName} ${profile.lastName}`;
+      }
     }
-    return currentUser?.email || "User"
-  }
+    return user?.email || "User";
+  };
 
   return (
     <>
@@ -88,7 +99,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -102,13 +112,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           width: isCollapsed ? 80 : 320,
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed left-0 top-0 z-50 h-full bg-sidebar border-r border-sidebar-border shadow-xl lg:relative lg:translate-x-0 ${
+        className={`fixed left-0 top-0 z-50 h-full bg-gray-900 text-white border-r border-gray-800 shadow-xl lg:relative lg:translate-x-0 ${
           isCollapsed ? "lg:w-20" : "lg:w-80"
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
+          <div className="flex items-center justify-between p-6 border-b border-gray-800">
             {!isCollapsed && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -116,46 +126,42 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 className="flex items-center gap-3"
               >
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                  <Building2 className="w-6 h-6 text-primary" />
+                  <Building2 className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-lg text-sidebar-foreground">Invertio.us</h1>
-                  <p className="text-xs text-sidebar-foreground/80">Invertio Taxation Company</p>
+                  <h1 className="font-bold text-lg text-white">Taxation Dashboard</h1>
+                  <p className="text-xs text-gray-400">Tax Management System</p>
                 </div>
               </motion.div>
             )}
 
             <div className="flex items-center gap-2">
               {/* Collapse toggle (desktop only) */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden lg:flex h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent"
+                className="hidden lg:flex h-8 w-8 p-0 text-white hover:bg-gray-800 rounded-md items-center justify-center"
               >
                 {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-              </Button>
+              </button>
 
               {/* Close button (mobile only) */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setIsOpen(false)}
-                className="lg:hidden h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent"
+                className="lg:hidden h-8 w-8 p-0 text-white hover:bg-gray-800 rounded-md items-center justify-center"
               >
                 <X className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             {navigationItems.map((item, index) => {
-              const isActive = location.pathname === item.href
-              const Icon = item.icon
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
 
               return (
-                <Link key={item.name} to={item.href} onClick={() => setIsOpen(false)}>
+                <Link key={item.name} href={item.href} onClick={() => setIsOpen(false)}>
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -164,8 +170,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     whileTap={{ scale: 0.98 }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-foreground shadow-lg border border-sidebar-border"
-                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                        ? "bg-blue-600 text-white shadow-lg border border-blue-500"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${isCollapsed ? "mx-auto" : ""}`} />
@@ -173,7 +179,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                       <div className="flex-1">
                         <p className="font-medium text-sm">{item.name}</p>
                         <p
-                          className={`text-xs ${isActive ? "text-sidebar-foreground/90" : "text-sidebar-foreground/60"}`}
+                          className={`text-xs ${isActive ? "text-blue-100" : "text-gray-400"}`}
                         >
                           {item.description}
                         </p>
@@ -181,40 +187,38 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     )}
                   </motion.div>
                 </Link>
-              )
+              );
             })}
           </nav>
 
           {/* User profile */}
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-gray-800">
             <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-              <Avatar className="h-10 w-10 ring-2 ring-sidebar-accent">
-                <AvatarFallback className="bg-white text-primary font-medium">{getUserInitials()}</AvatarFallback>
-              </Avatar>
+              <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium ring-2 ring-blue-500">
+                {getUserInitials()}
+              </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-sidebar-foreground truncate">{getUserName()}</p>
-                  <p className="text-xs text-sidebar-foreground/70 truncate">{currentUser?.email}</p>
+                  <p className="font-medium text-sm text-white truncate">{getUserName()}</p>
+                  <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                 </div>
               )}
             </div>
 
             {!isCollapsed && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={handleLogout}
-                className="w-full mt-3 justify-start text-sidebar-foreground/80 hover:text-red-400 hover:bg-red-500/10"
+                className="w-full mt-3 py-2 px-3 text-gray-300 hover:text-red-300 hover:bg-red-500/10 rounded-md text-left flex items-center"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
-              </Button>
+              </button>
             )}
           </div>
         </div>
       </motion.aside>
     </>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
